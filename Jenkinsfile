@@ -30,8 +30,6 @@ pipeline {
         always { archiveArtifacts 'gitleaks-report.json' }
     }
 }
-
-
         stage('SonarQube - SAST') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
