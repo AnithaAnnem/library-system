@@ -84,6 +84,21 @@ pipeline {
             }
         }
 
+        // ✅ Docker Image Scan stage added
+        stage('Docker Image Scan') {
+            steps {
+                sh '''
+                # Scan the built image for vulnerabilities using Trivy
+                trivy image --format json -o trivy-report.json ${FULL_IMAGE} || true
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts 'trivy-report.json'
+                }
+            }
+        }
+
         stage('Docker Push') {
             steps {
                 withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
