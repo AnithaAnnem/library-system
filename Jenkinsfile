@@ -32,7 +32,7 @@ pipeline {
 }
 stage('SonarQube - SAST') {
     steps {
-        withSonarQubeEnv('SonarQube') {  // Name must match Jenkins config
+        withSonarQubeEnv('sonar') {  // Name must match Jenkins config
             sh '''
                 sonar-scanner \
                 -Dsonar.projectKey=python \
