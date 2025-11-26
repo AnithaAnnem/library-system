@@ -1,2 +1,3 @@
+pytest-cov
 pytest
 Flask==3.0.0
