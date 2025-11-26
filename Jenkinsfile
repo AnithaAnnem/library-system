@@ -21,23 +21,15 @@ pipeline {
         }
 
         stage('Credential Scan - GitLeaks') {
-            steps {
-                sh '''
-                if ! command -v gitleaks &> /dev/null
-                then
-                    curl -sSL https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_VERSION}/gitleaks-linux-amd64 > gitleaks
-                    chmod +x gitleaks
-                    sudo mv gitleaks /usr/local/bin/
-                fi
-                
-                gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
-                '''
-            }
-            post {
-                always { archiveArtifacts 'gitleaks-report.json' }
-            }
-        }
-
+    steps {
+        sh '''
+        gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
+        '''
+    }
+    post {
+        always { archiveArtifacts 'gitleaks-report.json' }
+    }
+}
         stage('SonarQube - SAST') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
