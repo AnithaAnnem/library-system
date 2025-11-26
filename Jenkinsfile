@@ -103,7 +103,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
                     sh '''
-                    echo "$DOCKER_TOKEN" | docker login -u yourdockerid --password-stdin
+                    echo "$DOCKER_TOKEN" | docker login -u anithaannem --password-stdin
                     docker push ${FULL_IMAGE}
                     '''
                 }
