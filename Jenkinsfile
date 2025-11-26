@@ -32,15 +32,13 @@ pipeline {
 }
 stage('SonarQube - SAST') {
     steps {
-        withSonarQubeEnv('sonar') {  // Name must match Jenkins config
-            sh '''
-                sonar-scanner \
-                -Dsonar.projectKey=python \
-                -Dsonar.sources=. \
-                -Dsonar.host.url=http://44.222.237.153:9000 \
-                -Dsonar.login=${SONAR_AUTH_TOKEN}
-            '''
-        }
+        sh '''
+        docker run --rm -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
+        -Dsonar.projectKey=python \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=http://44.222.237.153:9000 \
+        -Dsonar.login=sqp_eaf31e33a6b46be434c32e854385525d34deda97
+        '''
     }
 }
 
