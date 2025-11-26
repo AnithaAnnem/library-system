@@ -30,19 +30,19 @@ pipeline {
         always { archiveArtifacts 'gitleaks-report.json' }
     }
 }
-        stage('SonarQube - SAST') {
-            steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=python-app \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.login=$SONAR_TOKEN
-                    '''
-                }
-            }
+stage('SonarQube - SAST') {
+    steps {
+        withSonarQubeEnv('SonarQube') {  // Name must match Jenkins config
+            sh '''
+                sonar-scanner \
+                -Dsonar.projectKey=python \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=http://44.222.237.153:9000 \
+                -Dsonar.login=${SONAR_AUTH_TOKEN}
+            '''
         }
+    }
+}
 
         stage('Python Unit Tests') {
             steps {
