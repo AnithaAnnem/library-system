@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         GITLEAKS_VERSION = "v8.18.0"
         IMAGE_NAME = "library-app"
-        REGISTRY = "docker.io/yourdockerid"
+        REGISTRY = "docker.io/anithaannem"
         TAG = "v${env.BUILD_NUMBER}"
         FULL_IMAGE = "${REGISTRY}/${IMAGE_NAME}:${TAG}"
         KUBE_CONTEXT = "your-kube-context"
