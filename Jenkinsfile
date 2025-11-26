@@ -8,9 +8,7 @@ pipeline {
         REGISTRY = "docker.io/yourdockerid"
         TAG = "v${env.BUILD_NUMBER}"
         FULL_IMAGE = "${REGISTRY}/${IMAGE_NAME}:${TAG}"
-        KUBE_CONTEXT = "your-kube-context"
         NAMESPACE = "default"
-        PATH = "${env.HOME}/.local/bin:${env.PATH}" // Ensure pip local bin is in PATH
     }
 
     stages {
@@ -20,7 +18,7 @@ pipeline {
                 checkout scm
             }
         }
-
+        
         stage('Credential Scan - GitLeaks') {
             steps {
                 sh '''
@@ -35,7 +33,7 @@ pipeline {
         stage('SonarQube - SAST') {
             steps {
                 sh '''
-                docker run --rm -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
+                sonar-scanner \
                 -Dsonar.projectKey=python \
                 -Dsonar.sources=. \
                 -Dsonar.host.url=http://44.222.237.153:9000 \
@@ -70,7 +68,7 @@ pipeline {
             steps {
                 sh '''
                 pip install pip-audit
-                ~/.local/bin/pip-audit --output pip-audit-report.json || true
+                pip-audit --output pip-audit-report.json || true
                 '''
             }
             post {
@@ -81,6 +79,23 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh "docker build -t ${FULL_IMAGE} ."
+            }
+        }
+
+        stage('Docker Image Scan') {
+            steps {
+                sh '''
+                # If Trivy is installed locally:
+                trivy image --format json -o trivy-report.json ${FULL_IMAGE} || true
+                
+                # OR, if using Docker container:
+                # docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --format json -o trivy-report.json ${FULL_IMAGE} || true
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts 'trivy-report.json'
+                }
             }
         }
 
@@ -99,10 +114,7 @@ pipeline {
             steps {
                 withKubeConfig(credentialsId: 'kubeconfig') {
                     sh '''
-                    echo "Updating image in Kubernetes Deployment..."
                     kubectl set image deployment/library-app-deployment library-app=${FULL_IMAGE} -n ${NAMESPACE}
-                    
-                    echo "Verifying rollout..."
                     kubectl rollout status deployment/library-app-deployment -n ${NAMESPACE}
                     '''
                 }
