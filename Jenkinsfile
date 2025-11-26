@@ -10,6 +10,7 @@ pipeline {
         FULL_IMAGE = "${REGISTRY}/${IMAGE_NAME}:${TAG}"
         KUBE_CONTEXT = "your-kube-context"
         NAMESPACE = "default"
+        PATH = "${env.HOME}/.local/bin:${env.PATH}" // Ensure pip local bin is in PATH
     }
 
     stages {
@@ -19,28 +20,29 @@ pipeline {
                 checkout scm
             }
         }
-        
+
         stage('Credential Scan - GitLeaks') {
-    steps {
-        sh '''
-        gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
-        '''
-    }
-    post {
-        always { archiveArtifacts 'gitleaks-report.json' }
-    }
-}
-stage('SonarQube - SAST') {
-    steps {
-        sh '''
-        docker run --rm -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
-        -Dsonar.projectKey=python \
-        -Dsonar.sources=. \
-        -Dsonar.host.url=http://44.222.237.153:9000 \
-        -Dsonar.login=sqp_eaf31e33a6b46be434c32e854385525d34deda97
-        '''
-    }
-}
+            steps {
+                sh '''
+                gitleaks detect --source . --report-format json --report-path gitleaks-report.json || true
+                '''
+            }
+            post {
+                always { archiveArtifacts 'gitleaks-report.json' }
+            }
+        }
+
+        stage('SonarQube - SAST') {
+            steps {
+                sh '''
+                docker run --rm -v $(pwd):/usr/src sonarsource/sonar-scanner-cli \
+                -Dsonar.projectKey=python \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=http://44.222.237.153:9000 \
+                -Dsonar.login=sqp_eaf31e33a6b46be434c32e854385525d34deda97
+                '''
+            }
+        }
 
         stage('Python Unit Tests') {
             steps {
@@ -68,7 +70,7 @@ stage('SonarQube - SAST') {
             steps {
                 sh '''
                 pip install pip-audit
-                pip-audit --output pip-audit-report.json || true
+                ~/.local/bin/pip-audit --output pip-audit-report.json || true
                 '''
             }
             post {
