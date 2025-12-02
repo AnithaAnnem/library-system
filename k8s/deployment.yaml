@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: library-app
+  name: library-app-deployment   # must match Jenkins
 spec:
   replicas: 1
   selector:
@@ -13,8 +13,7 @@ spec:
         app: library
     spec:
       containers:
-      - name: library-container
-        image: library-system:v1
-        imagePullPolicy: Never
+      - name: library-app        
+        image: anithaannem/library-app:latest
         ports:
-        - containerPort: 80
+        - containerPort: 5000
